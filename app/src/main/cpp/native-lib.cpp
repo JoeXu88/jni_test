@@ -162,12 +162,6 @@ Java_com_joe_jni_1test_MainActivity_callObjFunc(JNIEnv *env, jobject thiz) {
     //call method
     env->CallVoidMethod(util, infoid);
 
-    jmethodID getobj = env->GetMethodID(cls, "getPeopleObj", "()Lcom/joe/jni_test/util/people;");
-    if(getobj == 0) {
-        LOGE("can not get getobj method ID");
-        return;
-    }
-
 }
 
 }
