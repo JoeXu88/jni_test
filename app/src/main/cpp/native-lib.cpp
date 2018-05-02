@@ -113,6 +113,66 @@ Java_com_joe_jni_1test_MainActivity_setJavaVal(JNIEnv *env, jobject thiz) {
 
 JNIEXPORT void
 JNICALL
+Java_com_joe_jni_1test_MainActivity_setJavaValInThread(JNIEnv *env, jobject thiz) {
+    LOGI("setJavaValInThread==>");
+    JavaVM *jvm = NULL;
+    env->GetJavaVM(&jvm);
+    if(jvm == NULL) {
+        LOGE("can not get jvm");
+        return;
+    }
+    jobject g_obj = env->NewGlobalRef(thiz);
+
+    JNIEnv *env1 = NULL;
+    jvm->GetEnv((void**)&env1, JNI_VERSION_1_6);
+    if(env1 == NULL) {
+        LOGE("can not get env");
+        return;
+    }
+    //one way to get class is from object itself from java
+    //we can get from env or env1
+    jclass cls = env->GetObjectClass(thiz);
+    if(cls == NULL){
+        LOGE("can not get class object");
+        return;
+    }
+    jclass gcls = (jclass)env->NewGlobalRef(cls);
+    if(gcls == NULL){
+        LOGE("can not get global class object");
+        return;
+    }
+
+    //get field id for get or set the field value, even private field
+    //we can get from env or env1
+    jfieldID intfd = env->GetFieldID(cls, "val", "I");
+    if(intfd == 0) {
+        LOGE("can not get int val field ID");
+        return;
+    }
+
+    //we can get from env or env1
+    jfieldID strfd = env->GetStaticFieldID(cls, "str", "Ljava/lang/String;");
+    if(strfd == 0) {
+        LOGE("can not get float val field ID");
+        return;
+    }
+
+
+    //get field val through field id
+    //we can get from env or env1
+    jint val = env->GetIntField(g_obj, intfd);
+    LOGI("get orig java int val: %d", val);
+
+    //set field val through filed id
+    env->SetIntField(thiz, intfd, -2);
+    jstring str = env1->NewStringUTF("native test string in another thread");
+
+    //static value do not need object, just need class, because they are shared to all objects
+    env1->SetStaticObjectField(gcls, strfd, str);
+}
+
+JNIEXPORT void
+JNICALL
 Java_com_joe_jni_1test_MainActivity_callMainFunc(JNIEnv *env, jobject thiz) {
     jclass cls = env->GetObjectClass(thiz);
     if(cls == NULL){

@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
 
+import static java.lang.Thread.sleep;
+
 public class MainActivity extends AppCompatActivity {
     final String TAG = "maincode";
 
@@ -50,6 +52,31 @@ public class MainActivity extends AppCompatActivity {
 
         callObjFunc();
 
+        Thread thread = new Thread(new Runnable() {
+            private boolean set = false;
+            @Override
+            public void run() {
+                if(!set) {
+                    setJavaValInThread();
+                    Log.d(TAG, "after set from native: "+val +" str:"+str);
+                    set = true;
+                }
+                try {
+                    sleep(10);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        thread.start();
+
+        try {
+            thread.join(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
     }
 
     /**
@@ -61,6 +88,7 @@ public class MainActivity extends AppCompatActivity {
     public native int[] getIntArray();
     public native void setFloatArray(float[] array);
     public native void setJavaVal();
+    public native void setJavaValInThread();
     public native void callMainFunc();
     public native void callObjFunc();
 }
